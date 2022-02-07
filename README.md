@@ -9,7 +9,7 @@ Install requirements for **python 3**:
 pip3 install -r requirements.txt
 ```
 ```
-modify the variables with those you need and your mongodb credentials
+modify the variables with those you need and your mongodb credentials in main.py (on the top)
 ```
 ```
 python3 main.py
