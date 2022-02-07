@@ -3,7 +3,7 @@ Ping servers using masscan files to try to find minecraft servers and retrieve i
 
 ## Usage
 
-Install requirements for python ***:
+Install requirements for **python 3**:
 
 ```
 pip3 install -r requirements.txt
