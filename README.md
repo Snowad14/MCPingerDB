@@ -33,3 +33,4 @@ Don't use it to destroy minecraft servers, it's immoral.
 - Display more than 11 players in arrays
 - Display if the server is Whitelisted
 - Display if the server allow crack
+- Website
