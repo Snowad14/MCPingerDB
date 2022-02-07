@@ -6,6 +6,9 @@ Ping servers using masscan files to try to find minecraft servers and retrieve i
 Install requirements for **python 3**:
 
 ```
+Have a text file containing the results of a masscan scan in the form -oL
+```
+```
 pip3 install -r requirements.txt
 ```
 ```
@@ -23,6 +26,7 @@ Don't use it to destroy minecraft servers, it's immoral.
 
 - Some of the code used from https://github.com/Zerogoki00/minescanner
 - https://github.com/Dinnerbone/mcstatus
+- https://github.com/robertdavidgraham/masscan
 
 ## TODO
 
