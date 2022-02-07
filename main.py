@@ -42,7 +42,7 @@ def read_hosts(file_name):
     except FileNotFoundError:
         print("File not found")
         sys.exit(1)
-    return hosts
+    return list(set(hosts)) # remove duplicate
 
 def checkMasscan(checkActivated):
     resetServerList(ServerList)
