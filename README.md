@@ -27,6 +27,7 @@ Don't use it to destroy minecraft servers, it's immoral.
 - Some of the code used from https://github.com/Zerogoki00/minescanner
 - https://github.com/Dinnerbone/mcstatus
 - https://github.com/robertdavidgraham/masscan
+- https://github.com/Footsiefat/Minecraft-Server-Scanner Multithreading part because concurrent.futures cause memory leak with big file
 
 ## TODO
 
