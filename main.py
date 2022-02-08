@@ -8,16 +8,16 @@ from pymongo import MongoClient
 from mcstatus import MinecraftServer
 
 # DB CONFIGURATION
-client = MongoClient("YOUR CRUSTER CREDENTIALS CONNECTION URLS")
+client = MongoClient("YOUR CRUSTER CREDENTIALS CONNECTION URL")
 DB = client["YOUR DATABASE NAME"]
 col = DB["YOUR COLLECTION NAME"]
 
 # PARAMETERS
-NUMBER_OF_WORKER = 100
+NUMBER_OF_WORKER = 40
 
-# FILES LOCATIONS - Modify with your path of file
+# FILES LOCATIONS
 DATABASE_FILE = "GeoLite2-Country.mmdb"
-MASSCAN_OUTPUT = "sample.txt" 
+MASSCAN_INPUT = "text.txt"
 
 # GLOBAL ARRAYS
 ServerList = []
@@ -44,50 +44,66 @@ def read_hosts(file_name):
         sys.exit(1)
     return list(set(hosts)) # remove duplicate
 
+def split_array(L,n):
+    return [L[i::n] for i in range(n)]
+
 def checkMasscan(checkActivated):
-    resetServerList(ServerList)
     hosts = read_hosts(MASSCAN_OUTPUT)
+    resetServerList(ServerList)
+    global split
+    split = list(split_array(hosts, NUMBER_OF_WORKER))
+    for x in range(NUMBER_OF_WORKER):
+        thread = myThread(x, str(x), checkActivated).start()
+
+class myThread (threading.Thread): # View credit for multithreading author
+    def __init__(self, threadID, name, check):
+        threading.Thread.__init__(self)
+        self.threadID = threadID
+        self.name = name
+        self.check = check
+    def run(self):
+        print ("Starting Thread " + self.name)
+        threaded_scan(self.name, self.check)
+        print ("Exiting Thread " + self.name)
+
+def threaded_scan(threadname, checkActivated):
     with geoip2.database.Reader(DATABASE_FILE) as reader:
-        with concurrent.futures.ThreadPoolExecutor(max_workers=NUMBER_OF_WORKER) as executor:
-            for ip, port in hosts:
-                executor.submit(threaded_scan, ip, port, reader, checkActivated)
+        for ip, port in split[int(threadname)]:
+            if 0:
+                threadname.exit()
+            try:
+                server = MinecraftServer(ip, port)
+                status = server.status()
 
-def threaded_scan(ip, port, reader, checkActivated):
-    try:
-        server = MinecraftServer(ip, port)
-        status = server.status()
+                country = reader.country(ip).country.names["en"]
+                print("Found Server " + ip + ":" + str(port))
+                latency = int(server.ping())
 
-        if checkActivated == True:
-            for x in ServerList:
-                if (x["IP"] + x["Port"]) == ip + str(port):
-                    print("Already in database : " + ip + ":" + str(port))
-                    return
+                if checkActivated == True:
+                    for x in ServerList:
+                        if (x["IP"] + x["Port"]) == ip + str(port):
+                            print("Already in database : " + ip + ":" + str(port))
+                            return
 
-        print("Found Server " + ip + ":" + str(port))
-        country = reader.country(ip).country.names["en"]
-        latency = int(server.ping())
+                playerlist = []
+                if status.players.online > 0:
+                    for i in status.raw["players"]["sample"]:
+                        playerlist.append(i["name"])
 
-
-        playerlist = []
-        if status.players.online > 0:
-            for i in status.raw["players"]["sample"]:
-                playerlist.append(i["name"])
-
-        col.insert_one({
-            "IP": ip,
-            "Port": str(port),
-            "Country": country,
-            "Version": status.version.name.translate(string_translator),
-            "Online": status.players.online,
-            "Max": status.players.max,
-            "Ping": latency,
-            "MOTD": status.description.translate(string_translator),
-            "OnlinePlayers": playerlist,
-            "Status": "ONLINE"
-        })
-
-    except:
-        print("IP is not a minecraft server or the server is not online : " + ip + ":" + str(port))
+                col.insert_one({
+                    "IP": ip,
+                    "Port": str(port),
+                    "Country": country,
+                    "Version": status.version.name.translate(string_translator),
+                    "Online": status.players.online,
+                    "Max": status.players.max,
+                    "Ping": latency,
+                    "MOTD": status.description.translate(string_translator),
+                    "OnlinePlayers": playerlist,
+                    "Status": "ONLINE"
+                })
+            except:
+                print("IP is not a minecraft server or the server is not online : " + ip + ":" + str(port))
 
 def updateAll():
     while True:
@@ -136,11 +152,10 @@ def removeDuplicates():
                 col.delete_one({"IP": doc["IP"], "Port": doc["Port"]})
 
 if __name__ == '__main__':
-    pass
     # Examples :
-    # removeDuplicates()
+    #removeDuplicates()
     # updataAll()
+    checkMasscan(False)
     # checkMasscan(True)
-    # checkMasscan(False)
 
 
