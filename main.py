@@ -76,7 +76,6 @@ def threaded_scan(threadname, checkActivated):
                 status = server.status()
 
                 country = reader.country(ip).country.names["en"]
-                print("Found Server " + ip + ":" + str(port))
                 latency = int(server.ping())
 
                 if checkActivated == True:
@@ -90,6 +89,8 @@ def threaded_scan(threadname, checkActivated):
                     for i in status.raw["players"]["sample"]:
                         playerlist.append(i["name"])
 
+                print("Found Server " + ip + ":" + str(port))
+                
                 col.insert_one({
                     "IP": ip,
                     "Port": str(port),
