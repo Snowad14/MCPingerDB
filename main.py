@@ -1,6 +1,6 @@
 import sys
 import threading
-
+import datetime
 import concurrent.futures
 import json
 import geoip2.database
@@ -108,6 +108,8 @@ def threaded_scan(threadname, checkActivated):
 
 def updateAll():
     while True:
+        time = datetime.datetime.now()
+        timestring = f"{str(time.year)}/{str(time.month)}/{str(time.day)}/{str(time.hour)}/{str(time.minute)}/{str(time.second)}" # just str() with all will work i think
         resetServerList(ServerList)
         with concurrent.futures.ThreadPoolExecutor(max_workers=NUMBER_OF_WORKER) as executor:
             for i in range(0, len(ServerList)):
@@ -124,14 +126,17 @@ def UpdateServer(srvinfos):
             for i in status.raw["players"]["sample"]:
                 playerlist.append(i["name"])
 
-        col.find_one_and_update({"_id":srvinfos["_id"]}, {'$set':
-        {"Version": status.version.name.translate(string_translator),
-         "Online": status.players.online,
-         "Max": status.players.max,
-         "Ping": latency,
-         "MOTD": status.description.translate(string_translator),
-         "OnlinePlayers": playerlist,
-         "Status": "ONLINE"}})
+        playerArrayDate = (timestring, playerlist)
+        col.find_one_and_update({"_id":srvinfos["_id"]}, {
+            "$set": {
+            "Version": status.version.name.translate(string_translator),
+            "Online": status.players.online,
+            "Max": status.players.max,
+            "Ping": latency,
+            "MOTD": status.description.translate(string_translator),
+            "Status": "ONLINE"},
+            "$push": {"OnlinePlayers": playerArrayDate}
+        })
 
         print("Updated " + srvinfos["IP"] + " - " + str(ServerList.index(srvinfos)) + "/" + str(len(ServerList)))
 
@@ -155,8 +160,8 @@ def removeDuplicates():
 if __name__ == '__main__':
     # Examples :
     #removeDuplicates()
-    # updataAll()
-    checkMasscan(False)
+     updataAll()
+    # checkMasscan(False)
     # checkMasscan(True)
 
 
