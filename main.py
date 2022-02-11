@@ -78,7 +78,7 @@ def threaded_scan(threadname, checkActivated):
                 country = reader.country(ip).country.names["en"]
                 latency = int(server.ping())
 
-                if checkActivated == True:
+                if checkActivated == True: # Just checkActivated will work but i prefer to write like that
                     for x in ServerList:
                         if (x["IP"] + x["Port"]) == ip + str(port):
                             print("Already in database : " + ip + ":" + str(port))
@@ -141,7 +141,7 @@ def UpdateServer(srvinfos):
         print("Updated " + srvinfos["IP"] + " - " + str(ServerList.index(srvinfos)) + "/" + str(len(ServerList)))
 
     except Exception as e:
-        #print(str(e))
+        #print(str(e)) if you want to s how errors delete #
         documentToUpdate = col.find_one_and_update({"_id": srvinfos["_id"]}, {'$set': { "Status": "OFFLINE" }})
         print("server not online " + srvinfos["IP"] + " - " + str(ServerList.index(srvinfos)) + "/" + str(len(ServerList)))
 
@@ -160,7 +160,7 @@ def removeDuplicates():
 if __name__ == '__main__':
     # Examples :
     #removeDuplicates()
-     updataAll()
+     updateAll()
     # checkMasscan(False)
     # checkMasscan(True)
 
